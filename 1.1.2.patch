@@ -1,0 +1,30 @@
+diff --git a/lib/chai/interface/should.js b/lib/chai/interface/should.js
+index bed3e49..c1d2a95 100644
+--- a/lib/chai/interface/should.js
++++ b/lib/chai/interface/should.js
+@@ -37,6 +37,9 @@ function loadShould() {
+     //
+     // Note that we have to use [[DefineProperty]] instead of [[Put]]
+     // since otherwise we would trigger this very setter!
++    if (!Object.isExtensible(this)) {
++      return;
++    }
+     Object.defineProperty(this, 'should', {
+       value: value,
+       enumerable: true,
+diff --git a/test_bug.js b/test_bug.js
+new file mode 100644
+index 0000000..4bd41af
+--- /dev/null
++++ b/test_bug.js
+@@ -0,0 +1,10 @@
++const fs = require('fs');
++try {
++  const chai = require('./lib/chai.js');
++  chai.should();
++  const obj = Object.freeze({ a: 1 });
++  obj.should.have.property('a');
++  fs.writeFileSync('output.txt', 'success\n');
++} catch (e) {
++  fs.writeFileSync('output.txt', e.stack + '\n');
++}
