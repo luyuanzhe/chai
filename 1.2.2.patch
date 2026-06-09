@@ -1,0 +1,125 @@
+diff --git a/split.mjs b/split.mjs
+new file mode 100644
+index 0000000..2af8094
+--- /dev/null
++++ b/split.mjs
+@@ -0,0 +1,119 @@
++import fs from 'fs';
++import path from 'path';
++
++const content = fs.readFileSync('lib/chai/core/assertions.js', 'utf8');
++const lines = content.split('\n');
++
++const getLines = (start, end) => lines.slice(start - 1, end).join('\n') + '\n';
++
++const modules = {
++  'chain.js': [
++    [15, 66]
++  ],
++  'flags.js': [
++    [68, 93],     // .not
++    [95, 134],    // .deep
++    [136, 160],   // .nested
++    [162, 186],   // .own
++    [188, 210],   // .ordered
++    [212, 231],   // .any
++    [233, 255],   // .all
++    [3013, 3034]  // .itself
++  ],
++  'type.js': [
++    [257, 352],   // functionTypes + .a
++    [643, 680],   // .ok
++    [682, 713],   // .true
++    [715, 722],   // numeric
++    [724, 748],   // .callable
++    [750, 796],   // .false
++    [798, 827],   // .null
++    [829, 857],   // .undefined
++    [859, 887],   // .NaN
++    [889, 935],   // .exist
++    [937, 1033],  // .empty
++    [1035, 1071]  // .arguments
++  ],
++  'inclusion.js': [
++    [354, 641],   // SameValueZero + includeChainingBehavior + .include
++    [4076, 4219]  // compareSubset + .containSubset
++  ],
++  'equality.js': [
++    [1073, 1139], // .equal
++    [1141, 1195]  // .eql
++  ],
++  'number.js': [
++    [1197, 1304], // .above
++    [1306, 1411], // .least
++    [1413, 1517], // .below
++    [1519, 1624], // .most
++    [1626, 1736], // .within
++    [3089, 3166], // .closeTo
++    [4011, 4074]  // .finite
++  ],
++  'object.js': [
++    [1738, 1811], // .instanceof
++    [1813, 2037], // .property + assertOwnProperty
++    [2039, 2196], // .ownPropertyDescriptor
++    [2360, 2599], // .keys
++    [2930, 3011], // .respondTo
++    [3895, 3924], // .extensible
++    [3926, 3968], // .sealed
++    [3970, 4009]  // .frozen
++  ],
++  'collection.js': [
++    [2198, 2290], // assertLengthChain + .lengthOf
++    [3168, 3274], // isSubsetOf + .members
++    [3276, 3334], // .iterable
++    [3336, 3435]  // .oneOf
++  ],
++  'string.js': [
++    [2292, 2330], // .match
++    [2332, 2358]  // .string
++  ],
++  'error.js': [
++    [2601, 2928]  // .throw
++  ],
++  'function.js': [
++    [3036, 3087], // .satisfy
++    [3437, 3567], // .change
++    [3569, 3685], // .increase
++    [3687, 3803], // .decrease
++    [3805, 3893]  // .by
++  ]
++};
++
++const commonImports = `import {Assertion} from '../../assertion.js';
++import {AssertionError} from 'assertion-error';
++import * as _ from '../../utils/index.js';
++import {config} from '../../config.js';
++
++const {flag} = _;
++
++`;
++
++const dir = 'lib/chai/core/assertions';
++if (!fs.existsSync(dir)) {
++  fs.mkdirSync(dir, { recursive: true });
++}
++
++let mainFileContent = `/*!
++ * chai
++ * http://chaijs.com
++ * Copyright(c) 2011-2014 Jake Luer <jake@alogicalparadox.com>
++ * MIT Licensed
++ */
++
++`;
++
++for (const [filename, ranges] of Object.entries(modules)) {
++  let content = commonImports;
++  for (const [start, end] of ranges) {
++    content += getLines(start, end) + '\n';
++  }
++  fs.writeFileSync(path.join(dir, filename), content);
++  mainFileContent += "import './assertions/" + filename + "';\n";
++}
++
++fs.writeFileSync('lib/chai/core/assertions.js', mainFileContent);
++console.log('Successfully split assertions.js into modules.');
