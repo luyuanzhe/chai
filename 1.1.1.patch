@@ -1,0 +1,48 @@
+diff --git a/lib/chai/interface/should.js b/lib/chai/interface/should.js
+index bed3e49..2b2f004 100644
+--- a/lib/chai/interface/should.js
++++ b/lib/chai/interface/should.js
+@@ -37,6 +37,13 @@ function loadShould() {
+     //
+     // Note that we have to use [[DefineProperty]] instead of [[Put]]
+     // since otherwise we would trigger this very setter!
++    if (
++      (typeof this === 'object' || typeof this === 'function') &&
++      !Object.isExtensible(this)
++    ) {
++      return;
++    }
++
+     Object.defineProperty(this, 'should', {
+       value: value,
+       enumerable: true,
+diff --git a/test/should-frozen.js b/test/should-frozen.js
+new file mode 100644
+index 0000000..311acff
+--- /dev/null
++++ b/test/should-frozen.js
+@@ -0,0 +1,24 @@
++import * as chai from '../index.js';
++
++describe('should on non-extensible objects', function () {
++  var should = chai.Should();
++
++  it('does not throw when assigning should on a frozen object before using should assertions', function () {
++    var frozenObject = Object.freeze({tea: 'matcha'});
++
++    (function () {
++      frozenObject.should = should;
++      frozenObject.should.have.property('tea', 'matcha');
++      frozenObject.should.be.frozen;
++    }).should.not.throw();
++  });
++
++  it('still creates an own should property on extensible objects', function () {
++    var object = {};
++
++    object.should = should;
++
++    Object.prototype.hasOwnProperty.call(object, 'should').should.be.true;
++    object.should.equal(should);
++  });
++});
