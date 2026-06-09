@@ -1,0 +1,179 @@
+diff --git a/plugins/json-assert.example.js b/plugins/json-assert.example.js
+new file mode 100644
+index 0000000..dd8fd60
+--- /dev/null
++++ b/plugins/json-assert.example.js
+@@ -0,0 +1,49 @@
++import * as chai from '../lib/chai.js';
++import jsonAssert from './json-assert.js';
++
++chai.use(jsonAssert);
++
++const expect = chai.expect;
++
++console.log('--- Scene 1: 合法 JSON ---');
++const validJSON = '{"name": "chai", "version": 1, "active": true}';
++try {
++  expect(validJSON).to.isValidJSON();
++  console.log('✓ 通过: expect(validJSON).to.isValidJSON()');
++} catch (err) {
++  console.log('✗ 未通过:', err.message);
++}
++
++console.log('--- Scene 2: 非法 JSON ---');
++const invalidJSON = '{name: chai, version: 1}';
++try {
++  expect(invalidJSON).to.not.isValidJSON();
++  console.log('✓ 通过: expect(invalidJSON).to.not.isValidJSON()');
++} catch (err) {
++  console.log('✗ 未通过:', err.message);
++}
++
++try {
++  expect(invalidJSON).to.isValidJSON();
++  console.log('✗ 不应通过');
++} catch (err) {
++  console.log('✓ 按预期抛出错误:', err.message);
++}
++
++console.log('--- Scene 3: 空字符串 ---');
++const emptyJSON = '';
++try {
++  expect(emptyJSON).to.not.isValidJSON();
++  console.log('✓ 通过: expect(\'\').to.not.isValidJSON()');
++} catch (err) {
++  console.log('✗ 未通过:', err.message);
++}
++
++try {
++  expect(emptyJSON).to.isValidJSON();
++  console.log('✗ 不应通过');
++} catch (err) {
++  console.log('✓ 按预期抛出错误:', err.message);
++}
++
++console.log('所有示例运行完成。');
+diff --git a/plugins/json-assert.js b/plugins/json-assert.js
+new file mode 100644
+index 0000000..92a79db
+--- /dev/null
++++ b/plugins/json-assert.js
+@@ -0,0 +1,41 @@
++/**
++ * Chai Plugin - isValidJSON
++ *
++ * 添加一个新的断言方法 .isValidJSON()，用于校验传入字符串是否为合法的 JSON 格式。
++ * 同时支持否定链式调用：.not.isValidJSON()。
++ *
++ * 使用方式：
++ *   import * as chai from 'chai';
++ *   import jsonAssert from './plugins/json-assert.js';
++ *   chai.use(jsonAssert);
++ *
++ *   expect('{"a": 1}').to.isValidJSON();
++ *   expect('not-json').to.not.isValidJSON();
++ */
++
++export default function jsonAssertPlugin(chai, utils) {
++  const Assertion = chai.Assertion;
++  const flag = utils.flag;
++
++  function isValidJSONString(value) {
++    if (typeof value !== 'string' || value.length === 0) return false;
++    try {
++      JSON.parse(value);
++      return true;
++    } catch (err) {
++      return false;
++    }
++  }
++
++  Assertion.addMethod('isValidJSON', function () {
++    const obj = flag(this, 'object');
++
++    this.assert(
++      isValidJSONString(obj),
++      'expected #{this} to be a valid JSON string',
++      'expected #{this} to not be a valid JSON string',
++      true,
++      undefined
++    );
++  });
++}
+diff --git a/plugins/json-assert.test.js b/plugins/json-assert.test.js
+new file mode 100644
+index 0000000..262ecd4
+--- /dev/null
++++ b/plugins/json-assert.test.js
+@@ -0,0 +1,71 @@
++import * as chai from '../lib/chai.js';
++import jsonAssert from './json-assert.js';
++
++chai.use(jsonAssert);
++
++const expect = chai.expect;
++let passed = 0;
++let failed = 0;
++
++function test(name, fn) {
++  try {
++    fn();
++    console.log('PASS:', name);
++    passed++;
++  } catch (err) {
++    console.log('FAIL:', name, '->', err.message);
++    failed++;
++  }
++}
++
++function assertThrows(fn, message) {
++  let thrown = false;
++  try {
++    fn();
++  } catch (err) {
++    thrown = true;
++    if (message && !err.message.includes(message)) {
++      throw new Error('Expected message to include: ' + message + ' but got: ' + err.message);
++    }
++  }
++  if (!thrown) throw new Error('Expected to throw');
++}
++
++test('合法 JSON - expect(valid).to.isValidJSON()', function () {
++  expect('{"name": "chai", "version": 1, "active": true}').to.isValidJSON();
++});
++
++test('合法 JSON - expect(valid).to.not.throw 对 assert 无意义，额外验证数组 JSON', function () {
++  expect('[1, 2, "abc", null]').to.isValidJSON();
++});
++
++test('非法 JSON - expect(invalid).to.not.isValidJSON()', function () {
++  expect('{name: chai}').to.not.isValidJSON();
++});
++
++test('非法 JSON - expect(invalid).to.isValidJSON() 抛出异常', function () {
++  assertThrows(function () {
++    expect('{name: chai}').to.isValidJSON();
++  }, 'expected');
++});
++
++test('空字符串 - expect(\'\').to.not.isValidJSON()', function () {
++  expect('').to.not.isValidJSON();
++});
++
++test('空字符串 - expect(\'\').to.isValidJSON() 抛出异常', function () {
++  assertThrows(function () {
++    expect('').to.isValidJSON();
++  }, 'expected');
++});
++
++test('非字符串输入 - 数字 123 应视为非法 JSON', function () {
++  expect(123).to.not.isValidJSON();
++});
++
++test('对象字面量非字符串 - 应视为非法 JSON', function () {
++  expect({a: 1}).to.not.isValidJSON();
++});
++
++console.log('\n结果: 通过 ' + passed + ' 个，失败 ' + failed + ' 个');
++if (failed > 0) process.exit(1);
