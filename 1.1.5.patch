@@ -1,0 +1,25 @@
+diff --git a/lib/chai/interface/should.js b/lib/chai/interface/should.js
+index bed3e49..6b29800 100644
+--- a/lib/chai/interface/should.js
++++ b/lib/chai/interface/should.js
+@@ -37,12 +37,14 @@ function loadShould() {
+     //
+     // Note that we have to use [[DefineProperty]] instead of [[Put]]
+     // since otherwise we would trigger this very setter!
+-    Object.defineProperty(this, 'should', {
+-      value: value,
+-      enumerable: true,
+-      configurable: true,
+-      writable: true
+-    });
++    if (Object.isExtensible(this)) {
++      Object.defineProperty(this, 'should', {
++        value: value,
++        enumerable: true,
++        configurable: true,
++        writable: true
++      });
++    }
+   }
+   // modify Object.prototype to have `should`
+   Object.defineProperty(Object.prototype, 'should', {
