@@ -1,0 +1,109 @@
+diff --git a/lib/chai/assertion.js b/lib/chai/assertion.js
+index 95209fb..fab2546 100644
+--- a/lib/chai/assertion.js
++++ b/lib/chai/assertion.js
+@@ -60,7 +60,7 @@ export class Assertion {
+ 
+   /** @returns {boolean} */
+   static get includeStack() {
+-    console.warn(
++    util.warn(
+       'Assertion.includeStack is deprecated, use chai.config.includeStack instead.'
+     );
+     return config.includeStack;
+@@ -68,7 +68,7 @@ export class Assertion {
+ 
+   /** @param {boolean} value */
+   static set includeStack(value) {
+-    console.warn(
++    util.warn(
+       'Assertion.includeStack is deprecated, use chai.config.includeStack instead.'
+     );
+     config.includeStack = value;
+@@ -76,7 +76,7 @@ export class Assertion {
+ 
+   /** @returns {boolean} */
+   static get showDiff() {
+-    console.warn(
++    util.warn(
+       'Assertion.showDiff is deprecated, use chai.config.showDiff instead.'
+     );
+     return config.showDiff;
+@@ -84,7 +84,7 @@ export class Assertion {
+ 
+   /** @param {boolean} value */
+   static set showDiff(value) {
+-    console.warn(
++    util.warn(
+       'Assertion.showDiff is deprecated, use chai.config.showDiff instead.'
+     );
+     config.showDiff = value;
+diff --git a/lib/chai/config.js b/lib/chai/config.js
+index 07a1bbe..7b64b80 100644
+--- a/lib/chai/config.js
++++ b/lib/chai/config.js
+@@ -86,6 +86,20 @@ export const config = {
+    */
+   proxyExcludedKeys: ['then', 'catch', 'inspect', 'toJSON'],
+ 
++  /**
++   * ### config.enableWarning
++   *
++   * User configurable property, defines whether or not Chai should
++   * emit console warnings when deprecated assertion syntax is used.
++   * Set to `false` to suppress all deprecation warnings.
++   *
++   *     chai.config.enableWarning = false;  // disable warnings
++   *
++   * @param {boolean}
++   * @public
++   */
++  enableWarning: true,
++
+   /**
+    * ### config.deepEqual
+    *
+diff --git a/lib/chai/utils/index.js b/lib/chai/utils/index.js
+index 8dafa68..4c0f0af 100644
+--- a/lib/chai/utils/index.js
++++ b/lib/chai/utils/index.js
+@@ -96,6 +96,9 @@ export {isNaN} from './isNaN.js';
+ // getOperator method
+ export {getOperator} from './getOperator.js';
+ 
++// deprecation warning utility
++export {warn} from './warn.js';
++
+ // events EventTarget
+ export {events} from './events.js';
+ 
+diff --git a/lib/chai/utils/warn.js b/lib/chai/utils/warn.js
+new file mode 100644
+index 0000000..7b04937
+--- /dev/null
++++ b/lib/chai/utils/warn.js
+@@ -0,0 +1,24 @@
++import {config} from '../config.js';
++
++/*!
++ * Chai - deprecation warning utility
++ * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
++ * MIT Licensed
++ */
++
++/**
++ * ### .warn(message)
++ *
++ * Utility to display a deprecation warning on the console if
++ * `enableWarning` configuration is enabled (true by default).
++ *
++ * @namespace Utils
++ * @name warn
++ * @param {string} message - deprecation warning message
++ * @returns {void}
++ */
++export function warn(message) {
++  if (config.enableWarning && typeof console !== 'undefined' && console.warn) {
++    console.warn('[Chai Deprecation] ' + message);
++  }
++}
