@@ -1,0 +1,30 @@
+const chai = require('chai');
+const jsonAssertPlugin = require('./plugins/json-assert');
+
+// 注册插件
+chai.use(jsonAssertPlugin);
+
+const { expect } = chai;
+
+console.log("Running examples...");
+
+try {
+  // 场景 1: 合法 JSON
+  const validJson = '{"name": "chai", "version": "4.0.0"}';
+  expect(validJson).to.isValidJSON();
+  console.log("✅ 场景 1 成功: 合法 JSON 校验通过");
+
+  // 场景 2: 非法 JSON
+  const invalidJson = '{"name": "chai", "version": "4.0.0"'; // 缺少闭合大括号
+  expect(invalidJson).to.not.isValidJSON();
+  console.log("✅ 场景 2 成功: 非法 JSON 校验通过");
+
+  // 场景 3: 空字符串
+  const emptyString = '';
+  expect(emptyString).to.not.isValidJSON();
+  console.log("✅ 场景 3 成功: 空字符串校验通过");
+
+  console.log("All examples passed!");
+} catch (error) {
+  console.error("❌ Example failed:", error.message);
+}
