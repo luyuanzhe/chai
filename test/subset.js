@@ -222,4 +222,148 @@ describe('containsSubset', function () {
       });
     });
   });
+
+  describe('nested array subset', function () {
+    it('should pass for nested array as subset', function () {
+      const testedArray = [1, [2, 3], [4, [5, 6]]];
+      expect(testedArray).to.containSubset([[2, 3]]);
+    });
+
+    it('should pass for deeply nested array subset', function () {
+      const testedArray = [1, [2, 3], [4, [5, 6]]];
+      expect(testedArray).to.containSubset([[4, [5]]]);
+    });
+
+    it('should fail when deeply nested subset does not match', function () {
+      const testedArray = [1, [2, 3], [4, [5, 6]]];
+      expect(testedArray).to.not.containSubset([[4, [7]]]);
+    });
+
+    it('should pass for array nested in object subset', function () {
+      const testedObject = {
+        data: [1, 2, [3, 4], [5, [6, 7]]]
+      };
+      expect(testedObject).to.containSubset({
+        data: [[3, 4]]
+      });
+    });
+  });
+
+  describe('deeply nested object subset', function () {
+    it('should pass for multiple levels of nesting', function () {
+      const testedObject = {
+        level1: {
+          level2: {
+            level3: {
+              level4: {
+                value: 'deep',
+                extra: 'data'
+              }
+            }
+          }
+        }
+      };
+      expect(testedObject).to.containSubset({
+        level1: {
+          level2: {
+            level3: {
+              level4: {
+                value: 'deep'
+              }
+            }
+          }
+        }
+      });
+    });
+
+    it('should pass for nested objects within nested arrays', function () {
+      const testedObject = {
+        users: [
+          {
+            profile: {
+              address: {
+                city: 'New York',
+                zip: '10001'
+              }
+            }
+          },
+          {
+            profile: {
+              address: {
+                city: 'London',
+                zip: 'SW1A 1AA'
+              }
+            }
+          }
+        ]
+      };
+      expect(testedObject).to.containSubset({
+        users: [
+          {
+            profile: {
+              address: {
+                city: 'New York'
+              }
+            }
+          }
+        ]
+      });
+    });
+
+    it('should fail when deep nested value does not match', function () {
+      const testedObject = {
+        level1: {
+          level2: {
+            level3: {
+              value: 'correct'
+            }
+          }
+        }
+      };
+      expect(testedObject).to.not.containSubset({
+        level1: {
+          level2: {
+            level3: {
+              value: 'wrong'
+            }
+          }
+        }
+      });
+    });
+  });
+
+  describe('null/undefined subset matching', function () {
+    it('should pass when actual and expected are null', function () {
+      expect({a: null}).to.containSubset({a: null});
+    });
+
+    it('should pass when actual and expected are undefined', function () {
+      expect({a: undefined}).to.containSubset({a: undefined});
+    });
+
+    it('should pass for nested null in object', function () {
+      expect({
+        user: {
+          name: 'John',
+          middleName: null
+        }
+      }).to.containSubset({
+        user: {
+          middleName: null
+        }
+      });
+    });
+
+    it('should fail when expected is null but actual is not null', function () {
+      expect({a: 123}).to.not.containSubset({a: null});
+    });
+
+    it('should fail when expected is undefined but actual is not undefined', function () {
+      expect({a: null}).to.not.containSubset({a: undefined});
+    });
+
+    it('should pass when null is in array subset', function () {
+      expect([1, null, 3]).to.containSubset([null]);
+    });
+  });
 });
