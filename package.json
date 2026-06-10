@@ -43,7 +43,7 @@
     "lint:js": "eslint lib/",
     "lint:format": "prettier --check lib",
     "lint:types": "tsc",
-    "clean": "rm -rf index.js coverage/"
+    "clean": "rimraf index.js coverage/"
   },
   "overrides": {
     "c8": {
@@ -71,6 +71,7 @@
     "mocha": "^11.0.0",
     "pathval": "^2.0.0",
     "prettier": "^3.4.2",
+    "rimraf": "^5.0.5",
     "typescript": "~6.0.0"
   }
 }
