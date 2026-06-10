@@ -1,0 +1,80 @@
+export default function jsonAssertPlugin(chai, utils) {
+  var Assertion = chai.Assertion;
+
+  Assertion.addMethod('isValidJSON', function () {
+    var obj = this._obj;
+
+    var isValid = false;
+    try {
+      if (typeof obj === 'string') {
+        JSON.parse(obj);
+        isValid = true;
+      }
+    } catch (e) {
+      isValid = false;
+    }
+
+    this.assert(
+      isValid,
+      'expected #{this} to be a valid JSON string',
+      'expected #{this} not to be a valid JSON string'
+    );
+  });
+}
+
+if (process.argv[1]) {
+  import('node:url').then(function ({ fileURLToPath }) {
+    import('node:path').then(function ({ resolve }) {
+      if (fileURLToPath(import.meta.url) !== resolve(process.argv[1])) return;
+
+      import('../lib/chai.js').then(function (chaiModule) {
+        var chai = chaiModule;
+        var expect = chai.expect;
+
+        chai.use(jsonAssertPlugin);
+
+        console.log('=== Example 1: Valid JSON (should pass) ===');
+        try {
+          expect('{"name":"John","age":30}').to.be.isValidJSON();
+          console.log('PASS: valid JSON string passes isValidJSON assertion');
+        } catch (e) {
+          console.log('FAIL:', e.message);
+        }
+
+        console.log('\n=== Example 2: Invalid JSON (should fail) ===');
+        try {
+          expect('{invalid json string}').to.be.isValidJSON();
+          console.log('PASS (unexpected)');
+        } catch (e) {
+          console.log('EXPECTED FAIL:', e.message);
+        }
+
+        console.log('\n=== Example 2 (negated): Invalid JSON with .not (should pass) ===');
+        try {
+          expect('{invalid json string}').to.not.be.isValidJSON();
+          console.log('PASS: invalid JSON string is correctly rejected via .not.isValidJSON');
+        } catch (e) {
+          console.log('FAIL:', e.message);
+        }
+
+        console.log('\n=== Example 3: Empty string (should fail) ===');
+        try {
+          expect('').to.be.isValidJSON();
+          console.log('PASS (unexpected)');
+        } catch (e) {
+          console.log('EXPECTED FAIL:', e.message);
+        }
+
+        console.log('\n=== Example 3 (negated): Empty string with .not (should pass) ===');
+        try {
+          expect('').to.not.be.isValidJSON();
+          console.log('PASS: empty string is correctly rejected via .not.isValidJSON');
+        } catch (e) {
+          console.log('FAIL:', e.message);
+        }
+
+        console.log('\n=== All examples completed ===');
+      });
+    });
+  });
+}
