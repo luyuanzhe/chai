@@ -1,0 +1,155 @@
+diff --git a/lib/chai/assertion.js b/lib/chai/assertion.js
+index 95209fb..4a20dad 100644
+--- a/lib/chai/assertion.js
++++ b/lib/chai/assertion.js
+@@ -60,7 +60,7 @@ export class Assertion {
+ 
+   /** @returns {boolean} */
+   static get includeStack() {
+-    console.warn(
++    util.warnDeprecated(
+       'Assertion.includeStack is deprecated, use chai.config.includeStack instead.'
+     );
+     return config.includeStack;
+@@ -68,7 +68,7 @@ export class Assertion {
+ 
+   /** @param {boolean} value */
+   static set includeStack(value) {
+-    console.warn(
++    util.warnDeprecated(
+       'Assertion.includeStack is deprecated, use chai.config.includeStack instead.'
+     );
+     config.includeStack = value;
+@@ -76,7 +76,7 @@ export class Assertion {
+ 
+   /** @returns {boolean} */
+   static get showDiff() {
+-    console.warn(
++    util.warnDeprecated(
+       'Assertion.showDiff is deprecated, use chai.config.showDiff instead.'
+     );
+     return config.showDiff;
+@@ -84,7 +84,7 @@ export class Assertion {
+ 
+   /** @param {boolean} value */
+   static set showDiff(value) {
+-    console.warn(
++    util.warnDeprecated(
+       'Assertion.showDiff is deprecated, use chai.config.showDiff instead.'
+     );
+     config.showDiff = value;
+@@ -201,4 +201,4 @@ export class Assertion {
+   set _obj(val) {
+     util.flag(this, 'object', val);
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/lib/chai/config.js b/lib/chai/config.js
+index 07a1bbe..97f6487 100644
+--- a/lib/chai/config.js
++++ b/lib/chai/config.js
+@@ -27,6 +27,8 @@ export const config = {
+    */
+   showDiff: true,
+ 
++  enableWarning: true,
++
+   /**
+    * ### config.truncateThreshold
+    *
+@@ -109,4 +111,4 @@ export const config = {
+    * @public
+    */
+   deepEqual: null
+-};
++};
+\ No newline at end of file
+diff --git a/lib/chai/utils/index.js b/lib/chai/utils/index.js
+index 8dafa68..096e389 100644
+--- a/lib/chai/utils/index.js
++++ b/lib/chai/utils/index.js
+@@ -90,6 +90,9 @@ export {addLengthGuard} from './addLengthGuard.js';
+ // isProxyEnabled helper
+ export {isProxyEnabled} from './isProxyEnabled.js';
+ 
++// deprecation warning helper
++export {warnDeprecated} from './warnDeprecated.js';
++
+ // isNaN method
+ export {isNaN} from './isNaN.js';
+ 
+@@ -118,4 +121,4 @@ export function isRegExp(obj) {
+  */
+ export function isNumeric(obj) {
+   return ['Number', 'BigInt'].includes(type(obj));
+-}
++}
+\ No newline at end of file
+diff --git a/lib/chai/utils/warnDeprecated.js b/lib/chai/utils/warnDeprecated.js
+new file mode 100644
+index 0000000..fdc1cc9
+--- /dev/null
++++ b/lib/chai/utils/warnDeprecated.js
+@@ -0,0 +1,11 @@
++import {config} from '../config.js';
++
++export function warnDeprecated(message = '') {
++  if (
++    config.enableWarning &&
++    typeof console !== 'undefined' &&
++    typeof console.warn === 'function'
++  ) {
++    console.warn(message);
++  }
++}
+\ No newline at end of file
+diff --git a/test/configuration.js b/test/configuration.js
+index b5ac839..790c425 100644
+--- a/test/configuration.js
++++ b/test/configuration.js
+@@ -1,7 +1,7 @@
+ import * as chai from '../index.js';
+ import {globalErr as err} from './bootstrap/index.js';
+ 
+-import '../register-should.js'; 
++import '../register-should.js';
+ 
+ describe('configuration', function () {
+   var assert = chai.assert;
+@@ -675,6 +675,12 @@ describe('configuration', function () {
+     });
+   });
+ 
++  describe('enableWarning', function() {
++    it('should have default value equal to true', function() {
++      expect(chai.config.enableWarning).to.be.true;
++    });
++  });
++
+   describe('deprecated properties', function() {
+     var origWarnFn;
+     var warnings;
+@@ -730,6 +736,15 @@ describe('configuration', function () {
+       chai.config.showDiff = !chai.config.showDiff;
+       assert.equal(chai.Assertion.showDiff, chai.config.showDiff);
+     });
++
++    it('does not warn when config.enableWarning is false', function() {
++      chai.config.enableWarning = false;
++
++      chai.Assertion.includeStack;
++      chai.Assertion.showDiff = true;
++
++      assert.equal(warnings.length, 0);
++    });
+   });
+ 
+   describe('useProxy', function() {
+@@ -801,4 +816,4 @@ describe('configuration', function () {
+       }, "expected { v: 1 } to deeply equal { v: 100 }");
+     })
+   })
+-});
++});
+\ No newline at end of file
