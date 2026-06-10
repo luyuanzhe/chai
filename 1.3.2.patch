@@ -1,0 +1,95 @@
+diff --git a/lib/chai/assertion.js b/lib/chai/assertion.js
+index 95209fb..fab2546 100644
+--- a/lib/chai/assertion.js
++++ b/lib/chai/assertion.js
+@@ -60,7 +60,7 @@ export class Assertion {
+ 
+   /** @returns {boolean} */
+   static get includeStack() {
+-    console.warn(
++    util.warn(
+       'Assertion.includeStack is deprecated, use chai.config.includeStack instead.'
+     );
+     return config.includeStack;
+@@ -68,7 +68,7 @@ export class Assertion {
+ 
+   /** @param {boolean} value */
+   static set includeStack(value) {
+-    console.warn(
++    util.warn(
+       'Assertion.includeStack is deprecated, use chai.config.includeStack instead.'
+     );
+     config.includeStack = value;
+@@ -76,7 +76,7 @@ export class Assertion {
+ 
+   /** @returns {boolean} */
+   static get showDiff() {
+-    console.warn(
++    util.warn(
+       'Assertion.showDiff is deprecated, use chai.config.showDiff instead.'
+     );
+     return config.showDiff;
+@@ -84,7 +84,7 @@ export class Assertion {
+ 
+   /** @param {boolean} value */
+   static set showDiff(value) {
+-    console.warn(
++    util.warn(
+       'Assertion.showDiff is deprecated, use chai.config.showDiff instead.'
+     );
+     config.showDiff = value;
+diff --git a/lib/chai/config.js b/lib/chai/config.js
+index 07a1bbe..343223f 100644
+--- a/lib/chai/config.js
++++ b/lib/chai/config.js
+@@ -13,6 +13,20 @@ export const config = {
+    */
+   includeStack: false,
+ 
++  /**
++   * ### config.enableWarning
++   *
++   * User configurable property, influences whether or not
++   * a friendly warning should be output to the console when
++   * a deprecated assertion syntax is used.
++   *
++   *     chai.config.enableWarning = false;  // disable warnings
++   *
++   * @param {boolean}
++   * @public
++   */
++  enableWarning: true,
++
+   /**
+    * ### config.showDiff
+    *
+diff --git a/lib/chai/utils/index.js b/lib/chai/utils/index.js
+index 8dafa68..515f8cb 100644
+--- a/lib/chai/utils/index.js
++++ b/lib/chai/utils/index.js
+@@ -119,3 +119,7 @@ export function isRegExp(obj) {
+ export function isNumeric(obj) {
+   return ['Number', 'BigInt'].includes(type(obj));
+ }
++
++// warn method
++export {warn} from './warn.js';
++
+diff --git a/lib/chai/utils/warn.js b/lib/chai/utils/warn.js
+new file mode 100644
+index 0000000..cfbf508
+--- /dev/null
++++ b/lib/chai/utils/warn.js
+@@ -0,0 +1,12 @@
++import {config} from '../config.js';
++
++/**
++ * Outputs a warning to the console if the `enableWarning` config is true.
++ *
++ * @param {string} message
++ */
++export function warn(message) {
++  if (config.enableWarning) {
++    console.warn(message);
++  }
++}
