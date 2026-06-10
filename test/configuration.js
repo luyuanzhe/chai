@@ -1,7 +1,7 @@
 import * as chai from '../index.js';
 import {globalErr as err} from './bootstrap/index.js';
 
-import '../register-should.js'; 
+import '../register-should.js';
 
 describe('configuration', function () {
   var assert = chai.assert;
@@ -675,6 +675,12 @@ describe('configuration', function () {
     });
   });
 
+  describe('enableWarning', function() {
+    it('should have default value equal to true', function() {
+      expect(chai.config.enableWarning).to.be.true;
+    });
+  });
+
   describe('deprecated properties', function() {
     var origWarnFn;
     var warnings;
@@ -729,6 +735,15 @@ describe('configuration', function () {
       assert.equal(chai.Assertion.showDiff, chai.config.showDiff);
       chai.config.showDiff = !chai.config.showDiff;
       assert.equal(chai.Assertion.showDiff, chai.config.showDiff);
+    });
+
+    it('does not warn when config.enableWarning is false', function() {
+      chai.config.enableWarning = false;
+
+      chai.Assertion.includeStack;
+      chai.Assertion.showDiff = true;
+
+      assert.equal(warnings.length, 0);
     });
   });
 
