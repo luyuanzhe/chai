@@ -1,0 +1,72 @@
+diff --git a/plugins/json-assert.js b/plugins/json-assert.js
+new file mode 100644
+index 0000000..1586c64
+--- /dev/null
++++ b/plugins/json-assert.js
+@@ -0,0 +1,33 @@
++import * as chai from '../lib/chai.js';
++
++function isParsableJSON(value) {
++  if (typeof value !== 'string' || value.trim() === '') {
++    return false;
++  }
++
++  try {
++    JSON.parse(value);
++    return true;
++  } catch {
++    return false;
++  }
++}
++
++export function jsonAssertPlugin(chaiInstance, utils) {
++  chaiInstance.Assertion.addMethod('isValidJSON', function () {
++    const value = utils.flag(this, 'object');
++
++    this.assert(
++      isParsableJSON(value),
++      'expected #{this} to be a valid JSON string',
++      'expected #{this} not to be a valid JSON string'
++    );
++  });
++}
++
++export function registerJSONAssert(chaiInstance = chai) {
++  chaiInstance.use(jsonAssertPlugin);
++  return chaiInstance;
++}
++
++export default jsonAssertPlugin;
+diff --git a/test/plugins.js b/test/plugins.js
+index c9c013c..7546a34 100644
+--- a/test/plugins.js
++++ b/test/plugins.js
+@@ -1,4 +1,5 @@
+ import * as chai from '../index.js';
++import {jsonAssertPlugin, registerJSONAssert} from '../plugins/json-assert.js';
+ 
+ describe('plugins', function () {
+ 
+@@ -61,3 +62,22 @@ describe('plugins', function () {
+     expect(expect('').moreTesting).to.equal('more success');
+   });
+ });
++
++describe('json assert plugin examples', function () {
++  before(function () {
++    registerJSONAssert(chai);
++  });
++
++  it('合法 JSON', function () {
++    chai.use(jsonAssertPlugin);
++    chai.expect('{"name":"chai","version":1}').to.be.isValidJSON();
++  });
++
++  it('非法 JSON', function () {
++    chai.expect('{"name":chai}').to.not.be.isValidJSON();
++  });
++
++  it('空字符串', function () {
++    chai.expect('').to.not.be.isValidJSON();
++  });
++});
