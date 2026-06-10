@@ -1,0 +1,98 @@
+diff --git a/lib/chai/assertion.js b/lib/chai/assertion.js
+index 95209fb..fab2546 100644
+--- a/lib/chai/assertion.js
++++ b/lib/chai/assertion.js
+@@ -60,7 +60,7 @@ export class Assertion {
+ 
+   /** @returns {boolean} */
+   static get includeStack() {
+-    console.warn(
++    util.warn(
+       'Assertion.includeStack is deprecated, use chai.config.includeStack instead.'
+     );
+     return config.includeStack;
+@@ -68,7 +68,7 @@ export class Assertion {
+ 
+   /** @param {boolean} value */
+   static set includeStack(value) {
+-    console.warn(
++    util.warn(
+       'Assertion.includeStack is deprecated, use chai.config.includeStack instead.'
+     );
+     config.includeStack = value;
+@@ -76,7 +76,7 @@ export class Assertion {
+ 
+   /** @returns {boolean} */
+   static get showDiff() {
+-    console.warn(
++    util.warn(
+       'Assertion.showDiff is deprecated, use chai.config.showDiff instead.'
+     );
+     return config.showDiff;
+@@ -84,7 +84,7 @@ export class Assertion {
+ 
+   /** @param {boolean} value */
+   static set showDiff(value) {
+-    console.warn(
++    util.warn(
+       'Assertion.showDiff is deprecated, use chai.config.showDiff instead.'
+     );
+     config.showDiff = value;
+diff --git a/lib/chai/config.js b/lib/chai/config.js
+index 07a1bbe..5ebf383 100644
+--- a/lib/chai/config.js
++++ b/lib/chai/config.js
+@@ -108,5 +108,22 @@ export const config = {
+    * @param {Function}
+    * @public
+    */
+-  deepEqual: null
++  deepEqual: null,
++
++  /**
++   * ### config.enableWarning
++   *
++   * User configurable property, influences whether or not
++   * deprecation warnings are shown in the console when using
++   * deprecated assertion syntax. When set to `true` (the default),
++   * a friendly warning message is printed when deprecated syntax
++   * is encountered. When set to `false`, these warnings are
++   * suppressed entirely.
++   *
++   *     chai.config.enableWarning = false;  // disable deprecation warnings
++   *
++   * @param {boolean}
++   * @public
++   */
++  enableWarning: true
+ };
+diff --git a/lib/chai/utils/index.js b/lib/chai/utils/index.js
+index 8dafa68..e46cd26 100644
+--- a/lib/chai/utils/index.js
++++ b/lib/chai/utils/index.js
+@@ -93,6 +93,9 @@ export {isProxyEnabled} from './isProxyEnabled.js';
+ // isNaN method
+ export {isNaN} from './isNaN.js';
+ 
++// warn method
++export {warn} from './warn.js';
++
+ // getOperator method
+ export {getOperator} from './getOperator.js';
+ 
+diff --git a/lib/chai/utils/warn.js b/lib/chai/utils/warn.js
+new file mode 100644
+index 0000000..a7a6d9e
+--- /dev/null
++++ b/lib/chai/utils/warn.js
+@@ -0,0 +1,10 @@
++import {config} from '../config.js';
++
++/**
++ * @param {string} message
++ */
++export function warn(message) {
++  if (config.enableWarning) {
++    console.warn(message);
++  }
++}
