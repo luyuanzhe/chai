@@ -1,0 +1,29 @@
+diff --git a/1.7.5.patch b/1.7.5.patch
+deleted file mode 100644
+index fe3a073..0000000
+--- a/1.7.5.patch
++++ /dev/null
+@@ -1 +0,0 @@
+-NULL
+\ No newline at end of file
+diff --git a/package.json b/package.json
+index 3b9d7fb..7b8edf1 100644
+--- a/package.json
++++ b/package.json
+@@ -43,7 +43,7 @@
+     "lint:js": "eslint lib/",
+     "lint:format": "prettier --check lib",
+     "lint:types": "tsc",
+-    "clean": "rm -rf index.js coverage/"
++    "clean": "rimraf index.js coverage"
+   },
+   "overrides": {
+     "c8": {
+@@ -71,6 +71,7 @@
+     "mocha": "^11.0.0",
+     "pathval": "^2.0.0",
+     "prettier": "^3.4.2",
++    "rimraf": "^6.0.0",
+     "typescript": "~6.0.0"
+   }
+ }
