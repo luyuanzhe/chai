@@ -1,4 +1,5 @@
 import * as chai from '../index.js';
+import {jsonAssertPlugin, registerJSONAssert} from '../plugins/json-assert.js';
 
 describe('plugins', function () {
 
@@ -59,5 +60,24 @@ describe('plugins', function () {
 
     var expect = chai.expect;
     expect(expect('').moreTesting).to.equal('more success');
+  });
+});
+
+describe('json assert plugin examples', function () {
+  before(function () {
+    registerJSONAssert(chai);
+  });
+
+  it('合法 JSON', function () {
+    chai.use(jsonAssertPlugin);
+    chai.expect('{"name":"chai","version":1}').to.be.isValidJSON();
+  });
+
+  it('非法 JSON', function () {
+    chai.expect('{"name":chai}').to.not.be.isValidJSON();
+  });
+
+  it('空字符串', function () {
+    chai.expect('').to.not.be.isValidJSON();
   });
 });
