@@ -1,0 +1,102 @@
+diff --git a/test/subset.js b/test/subset.js
+index 954e110..0afe838 100644
+--- a/test/subset.js
++++ b/test/subset.js
+@@ -222,4 +222,97 @@ describe('containsSubset', function () {
+       });
+     });
+   });
++
++  describe('nested arrays', function () {
++    it('should match nested array subset', function () {
++      const actual = {
++        arr: [
++          { a: 1, b: 2, c: [ { d: 3, e: 4 }, { d: 5, e: 6 } ] },
++          { a: 7, b: 8 }
++        ]
++      };
++      
++      expect(actual).to.containSubset({
++        arr: [
++          { c: [ { d: 3 } ] }
++        ]
++      });
++
++      expect(actual).to.not.containSubset({
++        arr: [
++          { c: [ { d: 4 } ] }
++        ]
++      });
++    });
++  });
++
++  describe('multi-level nested objects', function () {
++    it('should match deeply nested objects', function () {
++      const actual = {
++        level1: {
++          level2: {
++            level3: {
++              level4: {
++                level5: 'deep'
++              },
++              other: 'value'
++            }
++          }
++        }
++      };
++
++      expect(actual).to.containSubset({
++        level1: {
++          level2: {
++            level3: {
++              level4: {
++                level5: 'deep'
++              }
++            }
++          }
++        }
++      });
++
++      expect(actual).to.not.containSubset({
++        level1: {
++          level2: {
++            level3: {
++              level4: {
++                level5: 'wrong'
++              }
++            }
++          }
++        }
++      });
++    });
++  });
++
++  describe('null and empty values', function () {
++    it('should match null and empty values correctly', function () {
++      const actual = {
++        a: null,
++        b: '',
++        c: undefined,
++        d: [],
++        e: {}
++      };
++
++      expect(actual).to.containSubset({
++        a: null,
++        b: '',
++        c: undefined,
++        d: [],
++        e: {}
++      });
++
++      expect(actual).to.not.containSubset({
++        a: ''
++      });
++
++      expect(actual).to.not.containSubset({
++        a: undefined
++      });
++    });
++  });
+ });
++
