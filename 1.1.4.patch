@@ -1,0 +1,40 @@
+diff --git a/1.7.5.patch b/1.7.5.patch
+deleted file mode 100644
+index fe3a073..0000000
+--- a/1.7.5.patch
++++ /dev/null
+@@ -1 +0,0 @@
+-NULL
+\ No newline at end of file
+diff --git a/lib/chai/interface/should.js b/lib/chai/interface/should.js
+index bed3e49..78cbcaf 100644
+--- a/lib/chai/interface/should.js
++++ b/lib/chai/interface/should.js
+@@ -37,12 +37,21 @@ function loadShould() {
+     //
+     // Note that we have to use [[DefineProperty]] instead of [[Put]]
+     // since otherwise we would trigger this very setter!
+-    Object.defineProperty(this, 'should', {
+-      value: value,
+-      enumerable: true,
+-      configurable: true,
+-      writable: true
+-    });
++    //
++    // Guard against non-extensible objects (e.g. Object.freeze, Object.seal,
++    // or Object.preventExtensions): defining an own property on such an
++    // object would otherwise throw a TypeError. In those cases silently
++    // ignore the assignment so that `.should` style assertions can still be
++    // used against frozen/sealed objects. The assignment has no observable
++    // effect on a non-extensible object anyway.
++    if (Object.isExtensible(this)) {
++      Object.defineProperty(this, 'should', {
++        value: value,
++        enumerable: true,
++        configurable: true,
++        writable: true
++      });
++    }
+   }
+   // modify Object.prototype to have `should`
+   Object.defineProperty(Object.prototype, 'should', {
