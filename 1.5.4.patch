@@ -1,0 +1,144 @@
+diff --git a/1.7.5.patch b/1.7.5.patch
+deleted file mode 100644
+index fe3a073..0000000
+--- a/1.7.5.patch
++++ /dev/null
+@@ -1 +0,0 @@
+-NULL
+\ No newline at end of file
+diff --git a/test/subset.js b/test/subset.js
+index 954e110..355b48a 100644
+--- a/test/subset.js
++++ b/test/subset.js
+@@ -222,4 +222,131 @@ describe('containsSubset', function () {
+       });
+     });
+   });
++
++  describe('nested array subsets', function () {
++    var testedArray = [
++      {name: 'Alice', tags: ['admin', 'user']},
++      {name: 'Bob', tags: ['user', 'guest']},
++      {name: 'Carol', tags: ['admin', 'owner']}
++    ];
++
++    it('should pass when subset is an array of simple objects', function () {
++      expect(testedArray).to.containSubset([
++        {name: 'Alice'},
++        {name: 'Bob'}
++      ]);
++    });
++
++    it('should pass when subset matches nested array elements', function () {
++      expect(testedArray).to.containSubset([
++        {tags: ['admin']},
++        {tags: ['user']}
++      ]);
++    });
++
++    it('should pass when subset is a nested array of primitives', function () {
++      var matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
++      expect(matrix).to.containSubset([[2], [6]]);
++    });
++
++    it('should fail when nested array element is missing', function () {
++      expect(testedArray).to.not.containSubset([
++        {name: 'Alice'},
++        {name: 'Dave'}
++      ]);
++    });
++
++    it('should fail when nested array primitive is missing', function () {
++      var matrix = [[1, 2], [3, 4]];
++      expect(matrix).to.not.containSubset([[99]]);
++    });
++  });
++
++  describe('deeply nested object subsets', function () {
++    var testedObject = {
++      level1: {
++        level2: {
++          level3: {
++            level4: {
++              value: 'deep',
++              flag: true
++            },
++            other: 'data'
++          }
++        }
++      },
++      top: 'level'
++    };
++
++    it('should pass for a deeply nested leaf value', function () {
++      expect(testedObject).to.containSubset({
++        level1: {level2: {level3: {level4: {value: 'deep'}}}}
++      });
++    });
++
++    it('should pass for a partial match at multiple nested levels', function () {
++      expect(testedObject).to.containSubset({
++        level1: {
++          level2: {
++            level3: {
++              level4: {flag: true}
++            }
++          }
++        },
++        top: 'level'
++      });
++    });
++
++    it('should fail when a deeply nested leaf value does not match', function () {
++      expect(testedObject).to.not.containSubset({
++        level1: {level2: {level3: {level4: {value: 'shallow'}}}}
++      });
++    });
++
++    it('should fail when a deeply nested key is missing', function () {
++      expect(testedObject).to.not.containSubset({
++        level1: {level2: {level3: {level4: {missingKey: 'x'}}}}
++      });
++    });
++
++    it('should pass when intermediate level is omitted in subset', function () {
++      expect(testedObject).to.containSubset({
++        level1: {level2: {level3: {other: 'data'}}}
++      });
++    });
++  });
++
++  describe('empty and null value subset matching', function () {
++    it('should pass for empty object subset against any object', function () {
++      expect({a: 1, b: 2}).to.containSubset({});
++    });
++
++    it('should pass for empty array subset against any array', function () {
++      expect([1, 2, 3]).to.containSubset([]);
++    });
++
++    it('should pass for empty object subset inside nested object', function () {
++      expect({a: {b: {c: 1}}}).to.containSubset({a: {b: {}}});
++    });
++
++    it('should pass when expected value is null and actual value is also null', function () {
++      expect({a: null, b: 2}).to.containSubset({a: null});
++    });
++
++    it('should fail when expected value is null but actual is not null', function () {
++      expect({a: 1, b: 2}).to.not.containSubset({a: null});
++    });
++
++    it('should fail when actual value is null but expected is a non-null object', function () {
++      expect({a: null}).to.not.containSubset({a: {b: 1}});
++    });
++
++    it('should pass when expected value is undefined and actual value is also undefined', function () {
++      expect({a: undefined, b: 2}).to.containSubset({a: undefined});
++    });
++
++    it('should fail when comparing actual array with expected non-array object', function () {
++      expect([1, 2, 3]).to.not.containSubset({0: 1});
++    });
++  });
+ });
