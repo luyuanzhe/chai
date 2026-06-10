@@ -1,0 +1,184 @@
+diff --git a/test/subset.js b/test/subset.js
+index 954e110..a8ae22c 100644
+--- a/test/subset.js
++++ b/test/subset.js
+@@ -222,4 +222,179 @@ describe('containsSubset', function () {
+       });
+     });
+   });
++
++  describe('array nested subset', function () {
++    it('should match array containing objects with nested properties', function () {
++      var tested = [
++        {id: 1, name: 'Alice', address: {city: 'NYC', zip: '10001'}},
++        {id: 2, name: 'Bob', address: {city: 'LA', zip: '90001'}}
++      ];
++      expect(tested).to.containSubset([
++        {name: 'Alice', address: {city: 'NYC'}}
++      ]);
++    });
++
++    it('should not match when nested object in array element differs', function () {
++      var tested = [
++        {id: 1, name: 'Alice', address: {city: 'NYC'}},
++        {id: 2, name: 'Bob', address: {city: 'LA'}}
++      ];
++      expect(tested).to.not.containSubset([
++        {name: 'Alice', address: {city: 'LA'}}
++      ]);
++    });
++
++    it('should match array containing nested arrays', function () {
++      var tested = [
++        {name: 'Alice', tags: ['admin', 'user']},
++        {name: 'Bob', tags: ['user']}
++      ];
++      expect(tested).to.containSubset([
++        {name: 'Alice', tags: ['admin', 'user']}
++      ]);
++    });
++
++    it('should match empty array as subset of any array', function () {
++      expect([1, 2, 3]).to.containSubset([]);
++    });
++
++    it('should not match when array subset element has no match', function () {
++      var tested = [{a: 1}, {a: 2}];
++      expect(tested).to.not.containSubset([{a: 3}]);
++    });
++  });
++
++  describe('object multi-level nested subset', function () {
++    it('should match deeply nested object (4+ levels)', function () {
++      var tested = {
++        level1: {
++          level2: {
++            level3: {
++              level4: {
++                value: 'deep'
++              }
++            }
++          }
++        }
++      };
++      expect(tested).to.containSubset({
++        level1: {
++          level2: {
++            level3: {
++              level4: {
++                value: 'deep'
++              }
++            }
++          }
++        }
++      });
++    });
++
++    it('should match partial at deep nesting level', function () {
++      var tested = {
++        level1: {
++          level2: {
++            level3: {
++              a: 1,
++              b: 2,
++              c: 3
++            }
++          }
++        }
++      };
++      expect(tested).to.containSubset({
++        level1: {
++          level2: {
++            level3: {
++              a: 1
++            }
++          }
++        }
++      });
++    });
++
++    it('should not match when deep nested value differs', function () {
++      var tested = {
++        level1: {
++          level2: {
++            level3: {
++              value: 'correct'
++            }
++          }
++        }
++      };
++      expect(tested).to.not.containSubset({
++        level1: {
++          level2: {
++            level3: {
++              value: 'wrong'
++            }
++          }
++        }
++      });
++    });
++
++    it('should match mixed arrays and objects at different nesting levels', function () {
++      var tested = {
++        users: [
++          {
++            name: 'Alice',
++            profile: {
++              contacts: [{type: 'email', value: 'alice@example.com'}]
++            }
++          },
++          {
++            name: 'Bob',
++            profile: {
++              contacts: [{type: 'phone', value: '123-456'}]
++            }
++          }
++        ]
++      };
++      expect(tested).to.containSubset({
++        users: [
++          {
++            name: 'Alice',
++            profile: {
++              contacts: [{type: 'email'}]
++            }
++          }
++        ]
++      });
++    });
++  });
++
++  describe('empty value subset matching', function () {
++    it('should match empty object as subset of any object', function () {
++      expect({a: 1, b: 2}).to.containSubset({});
++    });
++
++    it('should match empty array as subset of any array', function () {
++      expect([{a: 1}]).to.containSubset([]);
++    });
++
++    it('should match object with null property value', function () {
++      expect({a: null, b: 2}).to.containSubset({a: null});
++    });
++
++    it('should not match when expected null but actual is not null', function () {
++      expect({a: 1, b: 2}).to.not.containSubset({a: null});
++    });
++
++    it('should not match when expected object but actual is null', function () {
++      expect({a: null}).to.not.containSubset({a: {b: 1}});
++    });
++
++    it('should match object with undefined property value', function () {
++      expect({a: undefined, b: 2}).to.containSubset({a: undefined});
++    });
++
++    it('should match empty string as subset value', function () {
++      expect({a: '', b: 'hello'}).to.containSubset({a: ''});
++    });
++
++    it('should match zero as subset value', function () {
++      expect({a: 0, b: 1}).to.containSubset({a: 0});
++    });
++  });
+ });
