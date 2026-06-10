@@ -1,0 +1,112 @@
+diff --git a/.github/workflows/node.js.yml b/.github/workflows/node.js.yml
+index 79171a0..181f402 100644
+--- a/.github/workflows/node.js.yml
++++ b/.github/workflows/node.js.yml
+@@ -32,10 +32,9 @@ jobs:
+     strategy:
+       matrix:
+         node-version:
+-          - 20      # to be removed 2026-04-30
++          - 20
+           - 25
+           - latest
+-        # See supported Node.js release schedule at https://github.com/nodejs/release#release-schedule
+ 
+     steps:
+     - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+@@ -48,3 +47,26 @@ jobs:
+     - run: npm ci --ignore-scripts
+     - run: npm run build --if-present
+     - run: npm run test-node
++
++  script-compat:
++    runs-on: ${{ matrix.os }}
++    strategy:
++      matrix:
++        os:
++          - ubuntu-20.04
++          - windows-latest
++        node-version:
++          - 20
++    steps:
++    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
++      with:
++        persist-credentials: false
++    - name: Use Node.js ${{ matrix.node-version }}
++      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
++      with:
++        node-version: ${{ matrix.node-version }}
++    - run: npm ci --ignore-scripts
++    - run: npm run clean
++    - run: npm run build
++    - run: npm run test-node
++    - run: npm run prebuild
+diff --git a/package-lock.json b/package-lock.json
+index 5f20051..481863d 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -26,6 +26,7 @@
+         "mocha": "^11.0.0",
+         "pathval": "^2.0.0",
+         "prettier": "^3.4.2",
++        "rimraf": "^5.0.0",
+         "typescript": "~6.0.0"
+       },
+       "engines": {
+@@ -6105,6 +6106,22 @@
+         "node": ">=0.10.0"
+       }
+     },
++    "node_modules/rimraf": {
++      "version": "5.0.10",
++      "resolved": "https://registry.npmjs.org/rimraf/-/rimraf-5.0.10.tgz",
++      "integrity": "sha512-l0OE8wL34P4nJH/H2ffoaniAokM2qSmrtXHmlpvYr5AVVX8msAyW0l8NVJFDxlSK4u3Uh/f41cQheDVdnYijwQ==",
++      "dev": true,
++      "license": "ISC",
++      "dependencies": {
++        "glob": "^10.3.7"
++      },
++      "bin": {
++        "rimraf": "dist/esm/bin.mjs"
++      },
++      "funding": {
++        "url": "https://github.com/sponsors/isaacs"
++      }
++    },
+     "node_modules/rollup": {
+       "version": "4.59.0",
+       "resolved": "https://registry.npmjs.org/rollup/-/rollup-4.59.0.tgz",
+diff --git a/package.json b/package.json
+index 3b9d7fb..74e129c 100644
+--- a/package.json
++++ b/package.json
+@@ -32,18 +32,18 @@
+   },
+   "main": "./index.js",
+   "scripts": {
+-    "build": "esbuild --bundle --format=esm --target=es2021 --keep-names --legal-comments=none --outfile=index.js lib/chai.js",
++    "build": "esbuild --bundle --format=esm --target=es2021 --keep-names --legal-comments=none --outfile=index.js \"lib/chai.js\"",
+     "prebuild": "npm run clean",
+     "format": "prettier --write lib",
+     "pretest": "npm run lint",
+     "test": "npm run test-node && npm run test-chrome",
+-    "test-node": "c8 --99 --check-coverage mocha --require ./test/bootstrap/index.js test/*.js",
++    "test-node": "c8 --99 --check-coverage mocha --require ./test/bootstrap/index.js \"test/*.js\"",
+     "test-chrome": "web-test-runner --playwright",
+     "lint": "npm run lint:js && npm run lint:format",
+     "lint:js": "eslint lib/",
+     "lint:format": "prettier --check lib",
+     "lint:types": "tsc",
+-    "clean": "rm -rf index.js coverage/"
++    "clean": "rimraf index.js coverage"
+   },
+   "overrides": {
+     "c8": {
+@@ -71,6 +71,7 @@
+     "mocha": "^11.0.0",
+     "pathval": "^2.0.0",
+     "prettier": "^3.4.2",
++    "rimraf": "^5.0.0",
+     "typescript": "~6.0.0"
+   }
+ }
