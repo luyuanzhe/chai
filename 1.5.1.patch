@@ -1,0 +1,111 @@
+diff --git a/test/subset.js b/test/subset.js
+index 954e110..6e4aa41 100644
+--- a/test/subset.js
++++ b/test/subset.js
+@@ -92,6 +92,106 @@ describe('containsSubset', function () {
+         e: new Date()
+       });
+     });
++
++    it('should pass for multi-level nested object subset', function () {
++      expect({
++        account: {
++          profile: {
++            preferences: {
++              notifications: {
++                email: {
++                  marketing: false,
++                  product: true
++                }
++              }
++            }
++          }
++        }
++      }).to.containSubset({
++        account: {
++          profile: {
++            preferences: {
++              notifications: {
++                email: {
++                  product: true
++                }
++              }
++            }
++          }
++        }
++      });
++    });
++
++    it('should match null values inside nested subset', function () {
++      expect({
++        user: {
++          middleName: null,
++          metadata: {
++            archivedAt: null,
++            status: 'active'
++          }
++        }
++      }).to.containSubset({
++        user: {
++          middleName: null,
++          metadata: {
++            archivedAt: null
++          }
++        }
++      });
++    });
++  });
++
++  describe('array subset', function () {
++    it('should pass for nested array subset', function () {
++      expect([
++        {
++          id: 1,
++          items: [
++            {
++              name: 'alpha',
++              meta: {
++                active: true
++              }
++            },
++            {
++              name: 'beta',
++              meta: {
++                active: false
++              }
++            }
++          ]
++        },
++        {
++          id: 2,
++          items: [
++            {
++              name: 'gamma',
++              meta: {
++                active: true
++              }
++            }
++          ]
++        }
++      ]).to.containSubset([
++        {
++          items: [
++            {
++              name: 'beta'
++            }
++          ]
++        },
++        {
++          items: [
++            {
++              meta: {
++                active: true
++              }
++            }
++          ]
++        }
++      ]);
++    });
+   });
+ 
+   describe('circular objects', function () {
